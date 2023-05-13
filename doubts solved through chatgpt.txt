@@ -1,0 +1,104 @@
+how to add code to product description in django admin panel so that when diplayed on html page things such as as line break 
+and bold characters are displayed?
+o display rich text formatting in the product description field of your Django admin panel, you can use a WYSIWYG editor that allows you to format the text with HTML tags such as <br> for line breaks 
+and <strong> for bold characters.
+pip install django-ckeditor
+Add ckeditor to the INSTALLED_APPS setting in your Django project's settings.py file:
+Add the CKEditorWidget to the ModelAdmin class for your product model:
+from django.contrib import admin
+from ckeditor.widgets import CKEditorWidget
+from .models import Product
+
+class ProductAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.TextField: {'widget': CKEditorWidget}
+    }
+
+admin.site.register(Product, ProductAdmin)
+
+In your product model's models.py file, add the TextField for the product description field and specify the CKEditor widget:
+from django.db import models
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(widget=CKEditorWidget())
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    # ...
+If the HTML tags are being displayed on the HTML page instead of being rendered as formatting, it's likely because the text is being escaped by Django's template engine. 
+To prevent this, you can use the safe filter in your template to tell Django to render the HTML tags as-is.
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{ product.name }}</h1>
+  <div>{{ product.description|safe }}</div>
+  <p>Price: {{ product.price }}</p>
+{% endblock %}
+------------------------------------------------------------------------------------------------------------------------------------------
+In addition to slug, the path() function in Django can take other types of URL parameters, including:
+int(eg-pk) , str (eg- username) , uuid(eg-pk) , path(eg-url) , date(yyyy-mm-dd) , datetime
+all are entered in sytax like -
+"/<path:url>/" , "/<int:pk>/"
+---------------------------------------------------------------------------------------------------------------------------
+what is session key and how it is useful?
+In web development, a session is a way to store information about a user across multiple requests. Each time a user makes a request to the server,
+the server can retrieve the session data associated with the user and use it to personalize the response or perform some other action.
+A session key is a unique identifier that is assigned to each user session. It is typically stored in a cookie on the user's browser,
+ which is sent along with each subsequent request to the server
+-------------------------------------------------------------------------------------------------------
+what inputs do url takes in html when we write {% url %} in html page
+view name or URL pattern name
+Arguments: Any positional arguments that the view function or URL pattern expects can be passed in as arguments
+keyword arguments: Any keyword arguments that the view function or URL pattern expects can be passed in as key=value pairs.
+---------------------------------------------------------------------------------
+Some common exceptions defined in django.core.exceptions include:
+
+ObjectDoesNotExist: Raised when a requested object does not exist.
+ValidationError: Raised when data fails validation checks.
+PermissionDenied: Raised when a user does not have permission to perform a certain action.
+FieldError: Raised when an invalid field name or query is used in a database operation.
+ImproperlyConfigured: Raised when the application or its environment is not configured correctly.
+------------------------------------------------------------------------------------------
+which approach is better either creating a modelManager in models.py or using a ORM query in views.py to handle different product variations
+Ans Both approaches can work, and the decision on which to use depends on various factors, such as the complexity of the variations, the amount of logic involved, and personal preference.
+
+Using a model manager in models.py can be a good choice when you have complex logic involved in handling variations, or when you want to reuse the same code in multiple views.
+ A model manager can abstract away the details of how variations are handled, making it easier to work with them across your application.
+On the other hand, using an ORM query in views.py can be a good choice when you have relatively simple variations or when you want more control over the specifics of the queries. 
+This approach can also be more lightweight and easier to reason about, since the logic is explicitly written in the view.
+Ultimately, it is up to the developer to decide which approach works best for their particular situation.
+--------------------------------------------------------------------------------------------------------------------------
+what are Django Model forms and why they are used
+Django ModelForms are a feature provided by Django that allow you to create HTML forms directly from model definitions.
+ ModelForms simplify the process of creating forms by automatically generating form fields based on the fields defined in a model.
+
+ModelForms provide several benefits:
+
+Automatic field generation: ModelForms automatically generate form fields based on the model fields, including their types, labels, and validation rules. 
+This saves you from manually defining form fields for each model field.
+
+Data validation: ModelForms handle data validation based on the model's field definitions. 
+They enforce the specified field types, constraints, and validation rules.
+
+Simplified form handling: ModelForms handle form submission, data processing, and saving data to the database. 
+They abstract away the details of data extraction, cleaning, and model object creation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

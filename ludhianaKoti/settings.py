@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     "category",
     "accounts",
     "store",
+    "cart",
+    "ckeditor",
 ]
 
 MIDDLEWARE = [
@@ -66,7 +68,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "category.context_processors.menu_links"
+                "category.context_processors.menu_links",
+                "cart.context_processors.counter",
             ],
         },
     },
@@ -124,3 +127,10 @@ MEDIA_URL = "/media/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+#SMTP Configuration
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'djangohostingaz@gmail.com'
+EMAIL_HOST_PASSWORD = '92165#22667'
+EMAIL_USE_TLS = True

@@ -1,8 +1,9 @@
 installed git created user and email of git
 git config --global user.name "John Doe" - Nitish
 git config --global user.email johndoe@example.com - rockybranilla@gmail.com
+github.com - nitish98726@gmail.com password - see amazon pass
 
-created a virtual environement named env
+created a virtual environement named env -> python -m venv <'name_of_env'>
 env\Scripts\activate - to activate the virtual environment
 
 started a new project ludhianaKoti
@@ -35,10 +36,13 @@ in admin.py file i made a class CategoryAdmin which helps keep the slug name sam
 ---------------------------------------------------------------------------------------------------------------------------------------
 User Model - so instaed of using django inbuilt user model we are using custom model using AbstractBaseUser , BaseUserManager
 normalize_email = if email entered in capital letters it will turn lowercase.
+in models.py there is a field USERNAME_FIELD - this is the field that is used for authentication for username.
 so we created a custom user model which uses email as login.This is just copy paste and is better that you instead of remembering just copy paste it
 settings.py file (AUTH_USER_MODEL = "accounts.Account")
 in admin.py file we added fields that we need to display in admin panel and also hashed the password using UserAdmin 
+if we want to use both email and phone number as username .then we will have to change the django  authentication mechanism.
 https://docs.djangoproject.com/en/4.1/topics/auth/customizing/ - A full example - see here official documentation
+once the model is created then create a superuser to login into admin page
 -----------------------------------------------------------------------------------------------------------------------------------------------
 store app - created and Product Model created in this
 variables = product_name ,slug , description , price , images , stock , is_available , category , created_date , modified_date
@@ -74,11 +78,253 @@ single_product = Product.objects.get(category__slug = ctegory_slug) - Here doubl
 linked to Category Model by foreign key with category variable .
 href = "{% url 'name_of_url_in_urls.py' %}"
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+Uploading everything to git
+created a new repository on guthub.com after signing up
+code written on github wesbite about what to do next.
+----------------------------------------------------------------------------------------------------------------------------------------------------
+cart app -for handling items in cart
+ we have created two models under here cart and cartItem
+cart has variables -cartid and date_added
+CartItem has product as foreignKey , cart , quantity , is_active status
+session keys - keys unique to each user that will act as cart id - (request.session.session_key - to obtain key of already existing seesion) , 
+request.sesion.create() - to create a new session key
+{% if single_product.stock <= 0 %}
+<some condition>
+{% else %}
+<some condition>
+{% endif %}
+{% if not cart_item %}
+h2>your cart is empty
+{% else %}
+
+Now basic idea here is instead of button tags we use anchor tags and when that anchor tag designed as button is clicked then it redirects you to the page
+desired with he modification yo want to be done mentioned in the views.py file -
+
+if a item is already in cart then instead of add to cart changed to added to cart and button non clickable .in store.views i ran filter on CartItem and
+checked the item i am viewing is alrady in cart or not and then fed it to context and by using if else changed the button
+-----------------------------------------------------------------------------------------------------------------------------------------
+pagination and search functionality.
+
+paginator = Paginator(products,3)
+        page = request.GET.get('page')
+        paged_products = paginator.get_page(page)
+
+{% if products.has_other_pages %} - checks if other pages are there
+{%  if products.has_previous %} - if there is a previous page
+{% for i in products.paginator.page_range %} - gives the number of pages formed
+{% if products.number == i %} - gives the current set of products page number
+href="?page={{products.next_page_number}} - gives next page number from current page
+href="?page={{products.previous_page_number}} - gives previous page number from current page
+{% if products.has_next %} - checks of there is a next page
+
+Search functionality-
+create a form with method get and then give a name to input field 
+def search(request):
+    if 'keyword' in request.GET:
+        keyword = request.GET['keyword']
+        if keyword:
+            products = Product.objects.order_by('-created_date').filter(Q(description__icontains= keyword) | Q(product_name__icontains = keyword))
+            count = products.count()
+        context  = {
+            'products':products,
+            'count':count,
+        }
+    return render (request , "store/store.html" , context )
+basic workflow is a form is created of get type that has action which redirect you to a url in urls.py and which is linked to some function in views.py file.
+the function returns some context submitted to the page and that page is diplayed by that view .
+----------------------------------------------------------------------------------------------------------------------------------------------
+suppose two models are connected by ForeignKey let be Cart and Product
+product = Cart.objects.filter(Product__product_price = 50 , slug=self.slug) - so here we used '__' after model name and accessed its fields
+{% if 'search' in request.path %} - to check for some keyword in url
+----------------------------------------------------------------------------------------------------------------------------------------------
+Variation Model - so different products can vary on basis of there color , size and other properties.
+fields- product model, variation Category - like size color etc , variation value - like green red ,small large , is_active  -if some variation not in stock
+then the product can be turned off. 
+
+in admin page if you want to make something editable from the outside itself then you can create a <list_editable> tupple having the name of the fields such
+as is_active
+in admin_page you can also add filters to sort your products by adding <list_filter> field .Add the paramters on which the variations are filterable.
+
+products = Product.objects.order_by('-created_date').filter(Q(description__icontains= keyword) | Q(product_name__icontains = keyword)) - A new type of database 
+query that can be used to create 'or' conditions.
+
+{% for i in single_product.variation_set.all %} - product_detail.html
+suppose you have two models linked by a foreign key (ex - Product Model has Cart model as foreign key) - now in some html code you have context as items from
+Cart model and you want details of Product models you can do a reverse lookup using cart.product_set.all - cart is model you have fed as context .product is 
+the model you want details from which has Foreign key linkage >write the name in lower case and _set.all to fetch values of that model.
+
+if you have product variation based on size and color and you have fed choices in database then if you want to show different variation category on page
+
+class VariationManager(models.Manager):
+    def colors(self):
+        return super(VariationManager , self).filter(variation_category = 'color' , is_active =True)
+    def sizes(self):
+        return super(VariationManager , self).filter(variation_category = 'size' , is_active =True)
+class Variation Manger is important to create as 
+
+class Variation(models.Model):
+    product = models.ForeignKey(Product , on_delete=models.CASCADE)
+    variation_category = models.CharField(max_length=100 , choices=variation_category_choice)
+    variation_value = models.CharField(max_length =100)
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now=True)
+    objects = VariationManager() #Here this line makes objects a Variation Manager class and can use its functions  -
+{% for i in single_product.variation_set.colors %} , {% for i in single_product.variation_set.sizes %}
+
+    def __str__(self):
+        return self.product.product_name
+
+-------------------------------------------------------------------------------------------------
+to add variations to the cart we created a new Manyto Many field in cartItems Class in cart models.py because one cart item
+can have many variations and for 1 variation there could be many products .
+now we had already appended variations using request.POST method 
+if request.method == 'POST':
+        for item in request.POST:
+            key = item #We have used a for loop here because product can have many type of variations such as size,color ,brand , fabric type 
+            value = request.POST[key]
+            # print(key , value)
+            try:
+                
+                variation = Variation.objects.get(product = product , variation_category__iexact = key , variation_value__iexact = value)
+                product_variation.append(variation)
+
+now using .add method we added the user chosen variation to cart item 
+now in html by accessing the model using .all and then iterating over the variations chosen we displayed it on cart.html page.
+{% if item.variation.all %}
+						{% for var in item.variation.all %}
+							{{var.variation_category | capfirst}}: {{var.variation_value | capfirst}} <br>
+						{% endfor %}
+{% endif %}
+
+Now if for one product there are two variations eg 1 shoe of two different sizes .they must be shown seperately in cart
+logoc is 
+1- check product is in cart or not
+2 -see what variation product is in the cart
+3 - see what is the new chosen variation.
+4 -see if the new chosen already exists and if exists then simply increase the quantity by 1 [using cart item id] else add the product with new variation
+Now to  remove items from the cart 
+fetch the cart_Item id and feed it to remove_cart function beecause different product variation will have different id
+see section 13 of the course for quick refresher beacuse i have written a lot of custom code because sir code sometimes didnot work
+all(elem in list2 for elem in list1) - this checks that list 1 eleemts are present in list 2 in any order
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Making user registration page in your website - raghav@gmail.com Upper#india
+we use django model forms-
+create a forms.py file in the same directory
+from django import forms
+class RegisterForm(forms.ModelForm):
+	class Meta:
+        	model = Account - name of the model for which you want to generate fields 
+        	fields = ['first_name' , 'last_name' , 'phone_number' , 'email' , 'password'] - which fields you want to generate
+
+feed this to views.py and then diplay on register.html
+
+forms.py - this below code is added if you want to add conditions to form input fields
+password = forms.CharField(widget= forms.PasswordInput(attrs={
+        'placeholder':'password'
+    }))
+    confirm_password = forms.CharField(widget= forms.PasswordInput(attrs={
+        'placeholder':'Confirm password'
+    }))
+
+class Meta:
+previous...
+def __init__(self , *args , **kwargs):
+        super(RegistrationForm , self).__init__(*args ,**kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+add above code to class meta to add css classes to all fields inside a form if there are many ,yo
+
+self.fields['first_name'].widget.attrs['placeholder'] = "First Name" - you can add this code piece to add placeholders in different form fields
+
+Now in views.py file
+def register(request):
+if request.method =="POST":
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            phone_number = form.cleaned_data['phone_number']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            username = email.split("@")[0]
+            user = Account.objects.create_user(first_name = first_name ,last_name=last_name , email = email , username =username , password=password)
+            user.phone_number = phone_number - this field was not in the create_user method so we can add this field to user details
+            user.save()
+    else:
+        form  = RegistrationForm()
 
 
+in forms.py -this piece of code is added to check wether password and confirm password match or not 
+def clean(self):
+        cleaned_data = super(RegistrationForm , self).clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
 
+        if password != confirm_password:
+            raise forms.ValidationError("Passwords do not match")
 
+in register.html just at the end add
+{{form.email.errors}}    this is a method of raising errors in form with a particlular field .instead of email you could use any field
+{{form.non_field_errors}} - this is a method of raisig errors when you have added some check manually like for above where you wanted to check passwords match 
+or not.
 
+showing messages in djamgo when new user is created 
+create alerts.html and add
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+Now in view.py 
+messages.success(request , "Registration Successful")
+
+do not forget to import from django.contrib import messages
+
+Logging in user -using auth class imported from django.contrib
+
+def login(request):
+    if request.method == "POST":
+        email = request.POST['email']
+        password = request.POST['password']
+
+        user = auth.authenticate(email = email , password = password)
+        if user is not None:
+            auth.login(request,user)
+            messages.success(request , "You are now Logged in")
+            return redirect("home")
+        else:
+            messages.error(request , "Invalid Login Credentials")
+            return redirect("login")
+    
+    return render(request , "accounts/login.html")
+
+when a user is loged in the user object is global in the entire website you can use different methods on user like user.id ,user.first_name
+
+How to logout a user
+def logout(request):
+    auth.logout(request)
+    messages.success(request , "You are Logged Out")
+    return render(request , "accounts/logout.html")
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Activating users using activation link
+def(register):
+continued....
+current_site = get_current_site(request)
+            main_subject = "Please activate your account"
+            message = render_to_string("accounts/account_verification.html" , {
+                "user":user,
+                'domain':current_site,
+                'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            send_email = EmailMessage(main_subject , message , to=[to_email])
+            send_email.send()
 
 
 

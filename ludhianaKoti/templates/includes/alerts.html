@@ -1,0 +1,9 @@
+{% if messages %}
+  
+    {% for message in messages %}
+    <div id = "message" class="container-fluid">  
+    <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %} role = "alert">{{ message }}
+    {% endfor %}
+  </div>
+    </div>
+{% endif %}
