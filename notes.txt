@@ -291,8 +291,8 @@ def login(request):
         email = request.POST['email']
         password = request.POST['password']
 
-        user = auth.authenticate(email = email , password = password)
-        if user is not None:
+        user = auth.authenticate(email = email , password = password) #by default if user is not active you cannot login from login page , 
+        if user is not None:  # the user has to activated only then will he be able to login
             auth.login(request,user)
             messages.success(request , "You are now Logged in")
             return redirect("home")
@@ -325,6 +325,99 @@ current_site = get_current_site(request)
             to_email = email
             send_email = EmailMessage(main_subject , message , to=[to_email])
             send_email.send()
+
+these are settings.py changes
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'djangohostingaz@gmail.com'
+EMAIL_HOST_PASSWORD = 
+EMAIL_USE_TLS = True
+
+account verification.html
+{% autoescape off %}
+Hi {{user.first_name}}
+
+PLease click on the link below to complete your registration
+http://{{domain}}{% url 'activate' uidb64=uid token=token %} - the parameters here are taken from above dictionary
+
+If you think its not you .Kindly Ignore the Mail
+{% endautoescape %}
+
+
+write 
+@login_required(login_url="login")- this will redirect the user to login page whenever you want some page to be accessed 
+only after login
+
+------------------------------------------------------------------------------------------------------------
+now the user if has some cart items before loging in our website then it should go to cart after the user has logged in - this changes we have made in views.py of
+accounts
+first of all we have made mandatory that a user logsin first before proceeding to checkout
+now in the login functionality 
+we check cart exists and then is there any item in cart and if so then for each item in cart we assign
+item.user = user
+item.save()
+
+remember seesion id is unique when user is logged in and when user is not
+Updating no of items in cart
+if request.user.is_authenticated:
+cart_items = CartItem.objects.filter(user = request.user)
+
+so to handle variations along with the above functionality we must first iterate through all products and variations(logged out) and check 
+wether these variations exist in logged in user cart or not.if there are then we simply increase the quantity else we add the new product with its variation to the logged in user cart.
+This has been done in accounts/views.py
+
+Now we wnat user to be redirected to home page if he signs in normally and if he clicks on checkout while logged out then after signin to be sent to checkout page.
+for this purpose i added <int> to to the url pattern such that whnever accounts/login/65 is the url the user is directed to home page and else to checkout page.i replicated login.html and
+created login1.html such that if address other tahn accounts/login/65 is received it sends to login1.html which gives argument so that user is directed to checkout page 
+
+if auth.autenticate(email = email, password = password) - if the credentials do not match then it returns a None
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+orders app - it contains three models payment , order ,order_product
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

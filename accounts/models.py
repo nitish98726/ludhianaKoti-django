@@ -51,6 +51,7 @@ class Account(AbstractBaseUser):
     objects = MyAccountManager()
 
    
+
     def has_perm(self , perm , obj=None):
         return self.is_admin
 

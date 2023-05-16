@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "store",
     "cart",
     "ckeditor",
+    "orders",
 ]
 
 MIDDLEWARE = [
@@ -132,5 +133,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'djangohostingaz@gmail.com'
-EMAIL_HOST_PASSWORD = '92165#22667'
+EMAIL_HOST_PASSWORD = 'tmjwpahpfboluunf'
 EMAIL_USE_TLS = True
