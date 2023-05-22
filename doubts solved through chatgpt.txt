@@ -170,11 +170,24 @@ HTTP_HOST: The host name or domain name of the server.
 REQUEST_METHOD: The HTTP method used in the request, such as "GET", "POST", "PUT", etc.
 HTTP_ACCEPT_LANGUAGE: The preferred language(s) of the client.
 You can access these values using request.META['key'], where 'key' is the specific header you want to retrieve. For example, to access the user agent, you can use request.META['HTTP_USER_AGENT'].
+----------------------------------------------------------------------------------------------------------------------------------------------
+order.product_id -what does this mean if product model is foreign key of order model
+In Django, if the Product model is a foreign key of the Order model, accessing order.product_id will give you the value of the foreign key field product_id of the Order model.
 
+Let's assume you have the following models:
 
+class Product(models.Model):
+    # Fields of the Product model
 
+class Order(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    # Other fields of the Order model
 
-
+In the above example, product is a foreign key field in the Order model referencing the Product model. 
+The foreign key field is automatically created with the name <related_model>_id, where <related_model> is the lowercase name of the related model (product in this case).
+When you access order.product_id, it will return the value of the product_id field, which represents the ID of the associated Product object.
+Note that accessing the foreign key ID directly (order.product_id) is useful in scenarios where you only need the ID value itself. 
+If you need to access other fields or perform operations on the related Product model, it's recommended to use the foreign key relationship directly, like order.product.
 
 
 

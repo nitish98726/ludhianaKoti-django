@@ -373,13 +373,89 @@ created login1.html such that if address other tahn accounts/login/65 is receive
 if auth.autenticate(email = email, password = password) - if the credentials do not match then it returns a None
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 orders app - it contains three models payment , order ,order_product
+now earlier we used to do
+new = order.objects.create(field_name = this ,field_name =that)
+new.save()
 
+We can also do 
 
+new = Order()
+now new has become the model itself
+new.field_name = this
+new.field_name = that
+new.save()
 
+to generate order number we imported
+from datettime import datetime
+now = datetime.now()
+            current_date = (now.strftime(r"%Y%m%d"))
+            order_number = current_date + str(data.id)
+ then we created payments.html to show the final order details payment method and billing address
 
+Above we hace created 3 classes in models.py - one is to collect adrress details and other Payment to collect payment details then there is OrderProduct to gather data from the above two classes 
+sand save it to one place so that order processing becomes easy
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+paypal integration
 
+sandbox account
 
+with the help of this article i integrated paypal accounts into my website.
+first create sandbox accounts 1 business and 1 personal
+copy the buttons code into html file for me is payments.html file , base.html ,settings
+then make a new business app and link it to business paypal account
+then copy the client id into the javascript link on the base.html tag and you must be good to go
+https://lo-victoria.com/how-to-integrate-paypal-smart-buttons-to-your-web-apps - good link for integration.
+---------------------------------------------------------------------------------------------------------------------------------------------
+Handling After order Functionalities
+if i want to show one model below another model in admin panel then i can do this by using admin.TabularInline
 
+class OrderProductInline(admin.TabularInline):
+    model = OrderProduct
+    extra =0 
+    readonly_fields = ('payment' , 'user' , 'product' , 'quantity' , 'product_price' , 'ordered') # this will show the fields as read only fields
+
+# now add above model to below model inlines 
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['order_number','full_name'  , "phone" ,'email' , 'city' , 'order_total' , 'tax', 'status' , 'is_ordered' , 'created_at']
+    list_filter = ['status' , 'is_ordered'] 
+    search_fields = ['order_number' , 'first_name' , 'last_name' , 'phone' , 'email']
+    list_per_page = 20
+    inlines = [OrderProductInline]
+# code for handling once the payment is done - first in javascript we created a datasending json function and then using 'json' library in python we handled the data
+and saved it to database
+def payments(request):
+    body = json.loads(request.body)
+    # print(body)
+    # Storing Transaction detail inside payment model
+    order = Order.objects.get(user = request.user , is_ordered = False , order_number = body['orderID'])
+    payment = Payment(
+        user = request.user,
+        payment_id = body["transID"],
+        payment_method = body['payment_method'],
+        amount_paid = order.order_total,
+        status = body['status'],
+    )
+    payment.save()
+    order.payment = payment
+    order.is_ordered = True
+    order.save()
+
+    #code here is a bit ambigious 
+    #Move the cart item to order Product Table
+    cart_items = CartItem.objects.filter(user = request.user)
+    
+    for item in cart_items:
+        orderproduct = OrderProduct()
+        orderproduct.order_id = order.id
+        # print(order.id)
+        orderproduct.payment = payment
+        orderproduct.user_id = request.user.id
+        orderproduct.product_id = item.product_id
+        # print(item.product_id)
+        orderproduct.quantity = item.quantity
+        orderproduct.productPrice = item.product.price
+        orderproduct.ordered = True
+        orderproduct.save()
 
 
 

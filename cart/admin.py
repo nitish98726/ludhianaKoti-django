@@ -5,6 +5,7 @@ class CartAdmin(admin.ModelAdmin):
     list_display = ('cart_id' , 'date_added') 
 class CartItemAdmin(admin.ModelAdmin):
     list_display = ('product' , 'cart' , 'quantity' , 'is_active') 
+    list_filter = ['user']
 
 # Register your models here.
 admin.site.register(Cart , CartAdmin)

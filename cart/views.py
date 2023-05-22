@@ -68,6 +68,7 @@ def add_cart(request , product_id):
                 cart_item = CartItem.objects.create(product = product ,quantity =1 , user = current_user)
                 if len(product_variation) >0:
                     for item in product_variation:
+                        print(item)
                         cart_item.variation.add(item)
                     cart_item.save()
             
