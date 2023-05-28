@@ -188,6 +188,26 @@ The foreign key field is automatically created with the name <related_model>_id,
 When you access order.product_id, it will return the value of the product_id field, which represents the ID of the associated Product object.
 Note that accessing the foreign key ID directly (order.product_id) is useful in scenarios where you only need the ID value itself. 
 If you need to access other fields or perform operations on the related Product model, it's recommended to use the foreign key relationship directly, like order.product.
+______________________________________________________________________________________________________________________________
+
+user.check_password(current_password) .Is check_password a inbuilt method? what other methods are there?
+Yes, check_password is an inbuilt method provided by Django's User model. It is used to check whether a given password matches the user's current password.
+
+Django's User model provides several other useful methods for working with user authentication and passwords. Some of the commonly used methods include:
+
+set_password: Sets the user's password by hashing it for security.
+has_usable_password: Checks if the user has a usable password set.
+get_user_permissions: Retrieves a set of all permissions for the user.
+get_group_permissions: Retrieves a set of all permissions for the groups the user belongs to.
+get_all_permissions: Retrieves a set of all permissions for the user, including both individual permissions and group permissions.
+get_username: Retrieves the username for the user.
+get_full_name: Retrieves the user's full name.
+get_short_name: Retrieves the user's short name.
+is_anonymous: Checks if the user is anonymous (not authenticated).
+is_authenticated: Checks if the user is authenticated (not anonymous).
+These methods are useful for various authentication and permission-related tasks in Django.
+ You can refer to the Django documentation for a complete list of methods available on the User model: https://docs.djangoproject.com/en/3.2/ref/contrib/auth/#user-model-methods
+
 
 
 

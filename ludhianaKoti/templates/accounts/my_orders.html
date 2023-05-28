@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class = "container mb-2">
+    <div class="row">
+        {% include "accounts/dashboard_sidebar.html" %}
+        <div class="col-md-9">
+            <div class='card'>
+                <div class="card-header"> Your Order List </div>
+                <!-- <div class="card-body"> -->
+                    <table class="table table-hover text-center">
+                        <thead>
+                            <tr>
+                                <th scope="col">Order #</th>
+                                <th scope="col">Billing Name</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Order Total</th>
+                                <th scope="col">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <th scope="row"><a href="{% url 'order_detail' order.order_number %}">{{order.order_number}}</a></th>
+                                <td>{{order.full_name}}</td>
+                                <td>{{order.phone}}</td>
+                                <td>{{order.order_total}}</td>
+                                <td>{{order.updated_at}}</td>
+                            </tr>
+                            {%endfor%}
+                            
+                            
+                        </tbody>
+                    </table>
+                <!-- </div> -->
+            </div>
+    
+        </div>
+    </div>
+    </div>
+    
+    {% endblock %}

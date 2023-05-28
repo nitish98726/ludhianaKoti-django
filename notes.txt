@@ -26,6 +26,7 @@ in index.html write {% extends 'base.html' %} {% load static %}{% block content 
 {% include 'includes/navbar.html' %} - in the base.html you can add different html pages by this method also.
 -----------------------------------------------------------------------------------------------------------------------
 Category Model -
+category.models
 class Meta:
         verbose_name = "Category"
         verbose_name_plural = "Categories"
@@ -457,34 +458,135 @@ def payments(request):
         orderproduct.ordered = True
         orderproduct.save()
 
+----------------------------------------------------------------------------------------------------------------------------
+My account Functionalities
+So now we will add functionality to the dashboard
+dashboard opens when user is logged in so 
+@login_required(login_url = "accounts/dashboard.html")
+def dashboard(request):
+continued ... in accounts/views.py file
+
+AFTER THAT we have configured the dasboard to show total orders the user has placed and its details
+we can also use if conditopn on html classes of an element
+
+the above anchor tags become active i fthe url contains the mentioned path
+<a class="list-group-item  {% if '/accounts/dashboard' in request.path %} active {% endif %}" href="{% url 'dashboard' %}"> Dashboard </a>
+<a class="list-group-item  {% if '/accounts/my_orders' in request.path %} active {% endif %}" href="{% url 'my_orders' %}"> My Orders </a>
 
 
+Now i created a UserProfile model to add user profile
+in accouts/admin.py
+from django.utils.html import format_html
+class UserProfileAdmin(admin.ModelAdmin):
+    # the below code will help us to display user profile image in the admin panel
+    def thumbnail(self , object):
+        return format_html("<img src='{}' , width='30' style='border-radius:50%;'>".format(object.profile_picture.url))
+    thumbnail.short_description  = "Profile Picture"
+    list_display = ('thumbnail' , 'user' , 'city' , 'state')
+
+Now if the user wants to edit his profile from dashboard -
+create a raw form with alignment according to grid system or howsover you want the fields to display on the webpage.
+then create a UserProfile model where all the profile deatails are stored then we can create modelform on this
+
+accounts/models.py
+class UserProfile(models.Model):
+    user = models.OneToOneField(Account , on_delete=models.CASCADE)
+    address_line1 = models.CharField(blank=True , max_length=200)
+    address_line2 = models.CharField(blank=True , max_length=100)
+    profile_picture = models.ImageField(blank=True,upload_to='userprofile')
+    city = models.CharField(blank=True , max_length=20)
+    state = models.CharField(blank=True , max_length=20)
+    country = models.CharField(blank=True , max_length=20 , default="INDIA")
+
+    def __str__(self):
+        return self.user.first_name
+    
+    def full_address(self):
+        return f'{self.address_line1} {self.address_line2}'
 
 
+accounts/forms.py
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ['first_name' , 'last_name' , 'phone_number']
+    def __init__(self , *args , **kwargs):
+        super(UserEditForm , self).__init__(*args ,**kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+class UserDetailForm(forms.ModelForm):
+    profile_picture = forms.ImageField(required=False , error_messages={"invalid":("image files only")} , widget = forms.FileInput) - 
+#this line is added so that it is not mandatory to be added in order to submit the form and error message
+    class Meta:
+        model = UserProfile
+        fields = ['address_line1' , "address_line2" , 'city' , 'state' , 'profile_picture' , 'country']
+    def __init__(self , *args , **kwargs): #To add class form-control to all input fields
+        super(UserDetailForm , self).__init__(*args ,**kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 
+templates/editprofile.html
+			<form action="{% url 'edit_profile' %}" method="POST" enctype="multipart/form-data"> # here enctype has to be added because form has a file input
+				<div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <label for="" class="form-label">First Name</label>
+                                        {{user_edit_form.first_name}} # in this way we can add model form input fields to html page
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="" class="form-label">Last Name</label>
+                                        {{user_edit_form.last_name}}
+                                    </div>
 
 
+accounts/views.py
+def edit_profile(request):
+    userprofile = get_object_or_404(UserProfile , user=request.user)
+    if request.method == 'POST':
+        user_edit_form = UserEditForm(request.POST , instance = request.user) #using django model form we called the form from forms.py
+	# added the user instance so that fields are prepopulated from existing user model on html page
+        user_detail_form = UserDetailForm(request.POST , request.FILES ,instance=userprofile) #similar as above and request.FILES because this expects files input
+        if user_edit_form.is_valid() and user_detail_form.is_valid():
+            user_edit_form.save()
+            user_detail_form.save()
+            messages.success(request , "Your Profile has been updated")
+            return redirect('edit_profile')
+    else:
+        user_edit_form= UserEditForm(instance= request.user)
+        user_detail_form = UserDetailForm(instance=userprofile)
+        context={
+            "user_edit_form":user_edit_form,
+            "user_detail_form" :user_detail_form,
+            "userprofile":userprofile
+        }
+
+    return render(request , 'accounts/edit_profile.html' , context )
 
 
+Creating User Profile automatically when new user signs up
+
+accounts/views.py
+def register(request):
+continued..
+profile = UserProfile()
+            profile.user_id =  user.id - making the  UserProfile user_id field equal to user.id 
+            profile.profile_picture = 'default/default-user.png' #in media create a folder named default and add the default-user.png 
+            profile.save()
 
 
+TO set default time zone of india for order creation date and time
+settings.py
+TIME_ZONE = "Asia/Kolkata"
 
+Suppose you have used tabular inline feature of djnago to show one model below another and now you want to show some image in that model on the admin panel
+you have to downlaod pip install django-admin-thumbnails 
+in admin.py import admin_thumbnails
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@admin_thumbnails.thumbnail('image') #name of the image field in your model-add this decorator above the class
+class ProductGalleryInline(admin.TabularInline):
+    model = ProductGallery
+    extra =1
 
 
 
